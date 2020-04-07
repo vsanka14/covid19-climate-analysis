@@ -35,8 +35,6 @@ Emerging evidence appears to suggest that weather conditions may influence the t
 
 ## Hypothesis: 
 
-- For USA, regions with temperature higher than 59 degree farenheit (15 degree celsius) and 75% humidity encounters less spread of covid-19 cases than others. 
-
 - A cross-sectional study (see references) correlated cases with mean temperature explored the effect of temperature on transmission in 429, mainly Chinese, cities. They found that for every 1℃ increase in the minimum temperature led to a decrease in the cumulative number of cases by 0.86. Another modelling study found that the current spread suggests a preference for cool and dry conditions. The outbreak epicenters such as China’s central province of Hubei, South Korea, Japan, Iran, Northwestern America and Northern Italy share an average temperature of 5°C to 11°C (41°F to 52°F) and 47% to 79% humidity.
 
 - Our hypothesis, therefore, is that area with average temperature and humidity level higher than these regions will see a decrease in the spread of the virus. 
