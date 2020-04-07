@@ -1,13 +1,10 @@
-
-# coding: utf-8
-
-# In[205]:
-
-
 import pandas as pd
 import os 
 import json
 import datetime 
+import numpy as np
+from statsmodels.regression.linear_model import OLS
+import seaborn as sns
 
 directory = '../data'
 all_dfs = {}
@@ -26,10 +23,6 @@ for filename in os.listdir(directory):
         df_new = df.groupby(df['Province_State']).aggregate(aggregation_functions)
         all_dfs[filename.replace('.csv', '')] = df_new
 
-
-# In[207]:
-
-
 states = ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming']
 states_data = {}
 for state in states:
@@ -46,16 +39,11 @@ for date in all_dfs:
         states_data[state].append(state_dict)
 
 
-# In[208]:
-
-
 states_df = {}
 for state in states_data:
     df = pd.DataFrame(states_data[state])
-    states_df[state] = df
-
-
-# In[209]:
+    states_df[state] = {}
+    states_df[state]['data'] = df
 
 
 def calc_avg(weather_data, date, field):
@@ -68,7 +56,7 @@ def calc_avg(weather_data, date, field):
         try:
             sum +=  int(weather_data[a][field])
         except:
-            print(a)
+            print('exception: ', weather_data[a], a)
         no_of_days -= 1
     return sum/14
 
@@ -76,48 +64,49 @@ def add_temp_and_humidity(state):
     weather_data = None
     with open(f'../weather_data/{state}.json') as f:
       weather_data = json.load(f)
-    states_df[state]['max_temp'] = states_df[state]['date'].map(lambda x: calc_avg(weather_data, x, 0))
-    states_df[state]['humidity'] = states_df[state]['date'].map(lambda x: calc_avg(weather_data, x, 1))
+    states_df[state]['data']['max_temp'] = states_df[state]['data']['date'].map(lambda x: calc_avg(weather_data, x, 'maxTemp'))
+    states_df[state]['data']['humidity'] = states_df[state]['data']['date'].map(lambda x: calc_avg(weather_data, x, 'maxHumidity'))
+
+def add_new_cases(state):
+    l=[]
+    for x,y in enumerate(states_df[state]['data']['confirmed']):
+        if x == 0: 
+           l.append(y)
+        else : 
+           l.append(y-l[x-1])
+    states_df[state]['data']['new_cases'] = l 
 
 
-# In[210]:
+def create_scaled_df(df):
+    y = np.log(df.iloc[:, -1]) #take log of number of cases
+    y.name = 'Infected cases' 
+    y = y.to_frame()
+    temp = 60
+    humid = 75
+    x = df[['max_temp', 'humidity']].sub([temp, humid])  
+    x.columns = ['Temp - 60F', 'Humidity - 75%']
+
+    scaled_df = pd.merge(left = x, right = y, left_on= x.index, right_on= y.index)
+    scaled_df = scaled_df.replace([np.inf, -np.inf], 0)
+    return scaled_df
 
 
-add_temp_and_humidity('Arizona')
+def prepare_state_df(state):
+    states_df[state]['data']['datetime'] = states_df[state]['data']['date'].map(lambda x: datetime.datetime.strptime(x, '%m-%d-%Y'))
+    states_df[state]['data'] = states_df[state]['data'].sort_values(by='datetime')
+    add_temp_and_humidity(state)
+    add_new_cases(state)
+    state_df = create_scaled_df(states_df[state]['data'])
+    return state_df
 
 
-# In[211]:
+for state in states_data:
+    scaled_df = prepare_state_df(state)
+    target = scaled_df.loc[:,'Infected cases']
+    features = scaled_df.loc[:, 'Temp - 60F':'Humidity - 75%']
+    result = OLS(target, features, hasconst=False).fit()
+    states_df[state]['scaled_df'] = scaled_df
+    states_df[state]['result'] = result
+    states_df[state]['max_infected'] = scaled_df['Infected cases'].max()
 
-
-states_df['Arizona']
-
-
-# In[138]:
-
-
-str = '03-24-2020'
-int(str.split('-')[1])
-
-
-# In[142]:
-
-
-str = 'abc'
-str.replace('z', '')
-
-
-# In[167]:
-
-
-import datetime 
-tod = datetime.datetime.strptime('03-10-2020' , '%m-%d-%Y')
-d = datetime.timedelta(days = 14)
-a = tod - d
-print(a.strftime('%m-%d-%Y'))
-
-
-# In[161]:
-
-
-datetime.datetime.strptime('2012-02-10' , '%Y-%m-%d')
-
+return states_df
