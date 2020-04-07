@@ -39,7 +39,7 @@ Emerging evidence appears to suggest that weather conditions may influence the t
 
 - Our hypothesis, therefore, is that area with average temperature and humidity level higher than these regions will see a decrease in the spread of the virus. 
 
-- After experimentation, I have set the threshold of temperature at 59 degree farenheit and humidity at 75% humidity. You can toggle with the temperature and humidity parameters to identify the suitable climate conditions for your hypothesis, based on the country of your analysis. These numbers will be subtracted from the max value of temperature and the overall humidity during the day of USA states in the modelling analysis.
+- After experimentation, I have set the threshold of temperature at 59°F and humidity at 75% humidity. You can toggle with the temperature and humidity parameters to identify the suitable climate conditions for your hypothesis, based on the country of your analysis. These numbers will be subtracted from the max value of temperature and the overall humidity during the day of USA states in the modelling analysis.
 
 
 ## Data processing: 
@@ -48,13 +48,11 @@ Emerging evidence appears to suggest that weather conditions may influence the t
 
 ## Modelling: 
 
-- Naive OLS estimate is utilized for simplicity and ease of interpretation; 
+- Naive OLS estimate is utilized for simplicity and ease of interpretation.
 
-**Model 1 for Infected cases**: log (Number of cases on Mar 16) = α(T emperature − 15C) + β(Humidity − 75%) + error term
+**Model for Growth rate**: log (New Cases on current day) = α(T emperature − 59°F) + β(Humidity − 75%) + error term
 
-**Model 2 for Growth rate**: log (Cases on Mar 16/ Cases on Mar 3) = α(T emperature − 15C) + β(Humidity − 75%) + error term
-
-- For expansion of research, more complex models with proper causal analysis controlling for confounding variables should be created to capture the true effect of temperature and humidity on the spread of coronavirus cases.  
+- This is an experimental model and more complex models should be used to truly understand the effect of temperature and humidity. This is because the spread of a virus depends on far more than simply its ability to survive in the environment. 
 
 ## Results: 
 
